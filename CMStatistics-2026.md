@@ -1,6 +1,4 @@
-Title: Flexible regression beyond the mean using the R package gamlss2
-
-Abstract:
+## Flexible regression beyond the mean using the R package gamlss2
 
 Many scientific questions concern not only how the average response changes 
 with covariates, but also how variability, skewness, tail behavior, or the 
