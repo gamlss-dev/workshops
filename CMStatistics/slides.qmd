@@ -1,6 +1,6 @@
 ---
-title: "Probabilistic Predictions in Practice"
-subtitle: "Parameters, Plots, Postprocessing, Packages"
+title: "Flexible Distributional Regression"
+subtitle: "Using the R Package gamlss2"
 author: "Nikolaus Umlauf, Achim Zeileis"
 format:
     beamer:
