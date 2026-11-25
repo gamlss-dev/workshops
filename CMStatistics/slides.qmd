@@ -19,7 +19,7 @@ format:
           - \definecolor{uibkblue}{cmyk}{1,0.6,0,0.65}%
             \definecolor{uibkbluel}{rgb}{0.89,0.94,1.00}%
 
-          - \AtBeginDocument{\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={2pt}{0pt}{shadecolor}, boxrule=0pt, colframe=white, colback=white, breakable, enhanced, sharp corners, left=1.5mm, top=0mm, bottom=0mm, before skip=2mm, after skip=0mm]}{\end{tcolorbox}}}
+          - \AtBeginDocument{\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={2pt}{0pt}{shadecolor}, boxrule=0pt, colframe=white, colback=white, breakable, enhanced, sharp corners, left=1.5mm, top=0mm, bottom=0mm, before skip=2mm, after skip=0mm]}{\end{tcolorbox}}\fi}
 
 pdf-engine: pdflatex
 
@@ -40,18 +40,119 @@ knitr::opts_chunk$set(
   fig.width = 6.4,
   out.width = "60%"
 )
+
 set.seed(403)
+
+suppressPackageStartupMessages(library("gamlss2"))
 ```
 
-## Introduction
+## What is a Regression Model?
+
+A typical answer is
+
+$$E(Y_i\mid\mathbf{x}_i)=h\{\eta(\mathbf{x}_i)\}.$$
+
+Much recent statistical research has focused on flexibility in the regression predictor $\eta(\mathbf{x}_i)$:
+
+- generalized additive models;
+- random effects and grouped effects;
+- spatial and spatiotemporal effects.
+
+\medskip
+
+The conditional mean specifies one feature of the response distribution.
+
+
+## Regression Beyond the Mean
+
+**Classic linear model**:
+
+:::: {.columns}
+::: {.column width="40%"}
+
+$$Y_i\mid x_i \sim N(\mu_i, \sigma^2),$$
+$$\mu_i = \beta_0 + \beta_1x_i.$$
+
+\bigskip
+
+- Linear conditional mean.
+- Constant conditional variance.
+
+:::
+::: {.column width="60%"}
 
 ```{r}
-x <- rnorm(3)
-print(x)
-summary(x)
+#| label: plot-intro-linear
+#| out-width: "100%"
+#| fig-height: 4.8
+#| fig-width: 5.5
+#| echo: false
+#| results: hide
+set.seed(6020)
+d <- data.frame("x" = runif(1000, -3, 3))
+d$y <- 0.6 * d$x^2 + rnorm(nrow(d), sd = exp(0.5 * d$x))
+
+m <- gamlss2(y ~ x, data = d)
+
+nd <- data.frame("x" = seq(min(d$x), max(d$x), length = 300))
+
+plot_fit <- function(model) {
+  pd <- predict(model, newdata = nd)
+
+  f <- cbind(
+    "5%" = quantile(pd, probs = 0.05),
+    "Mean" = mean(pd),
+    "95%" = quantile(pd, probs = 0.95)
+  )
+
+  plot(y ~ x, data = d, pch = 16, col = adjustcolor(1, 0.2))
+  matlines(nd$x, f, col = c(4, 2, 4), lty = 1, lwd = 3)
+  legend("topleft",
+    c("Fitted mean", "5th / 95th centiles"),
+    col = c(2, 4), lty = 1, lwd = 3, bty = "n")
+}
+
+plot_fit(m)
 ```
 
----
+:::
+::::
+
+
+## Regression Beyond the Mean
+
+**Nonlinear (additive) model**:
+
+:::: {.columns}
+::: {.column width="40%"}
+
+$$\mu_i = \beta_0 + f(x_i),$$
+$$\operatorname{Var}(Y_i\mid x_i) = \sigma^2.$$
+
+\bigskip
+
+- Nonlinear conditional mean.
+- Constant conditional variance.
+- Intervals retain constant width.
+- Nonlinearity and changing dispersion are separate modeling decisions.
+
+:::
+::: {.column width="60%"}
+
+```{r}
+#| label: plot-intro-nonlinear
+#| out-width: "100%"
+#| fig-height: 4.8
+#| fig-width: 5.5
+#| echo: false
+#| results: hide
+m <- gamlss2(y ~ s(x), data = d)
+plot_fit(m)
+```
+
+:::
+::::
+
 
 ## References
 
